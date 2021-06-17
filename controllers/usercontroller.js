@@ -39,7 +39,7 @@ router.post("/login", async(req, res) => {
         const loginUser = await User.findOne({
             where: {
                 username: username
-            },
+            }
         });
 
         if (loginUser) {
