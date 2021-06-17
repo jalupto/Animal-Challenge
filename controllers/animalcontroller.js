@@ -1,13 +1,16 @@
 const express = require("express");
 const router = express.Router();
+let validateSession = require("../middleware/validate-session");
 const { Animal } = require("../models");
 
-router.post("/create", async(req, res) => {
+router.post("/create", validateSession, async(req, res) => {
     const { name, legNumber, predator } = req.body.animal;
+    const { id } = req.user;
     const animalEntry = {
         name,
         legNumber,
-        predator
+        predator,
+        userId: id
     }
     try {
         const newAnimal = await Animal.create(animalEntry);
@@ -15,10 +18,9 @@ router.post("/create", async(req, res) => {
     } catch (err) {
         res.status(500).json({ error: err });
     }
-    // Animal.create(animalEntry)
 });
 
-router.get('/', async(req, res) => {
+router.get('/', validateSession, async(req, res) => {
     try {
         const allAnimals = await Animal.findAll();
         res.status(200).json(
@@ -31,7 +33,7 @@ router.get('/', async(req, res) => {
     }
 });
 
-router.delete('/delete/:name', async(req, res) => {
+router.delete('/delete/:name', validateSession, async(req, res) => {
     const animalToDelete = req.params.name;
     try {
         const query = {
@@ -52,7 +54,7 @@ router.delete('/delete/:name', async(req, res) => {
     }
 });
 
-router.put('/update/:id', async(req, res) => {
+router.put('/update/:id', validateSession, async(req, res) => {
     const { name, legNumber, predator } = req.body.animal;
 
     const query = {
