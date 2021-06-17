@@ -8,16 +8,16 @@ const jwt = require("jsonwebtoken");
 router.post("/create", async(req, res) => {
     let { username, password } = req.body.user;
     try {
-        const User1 = await User.create({
+        const User = await User.create({
             username,
             password: bcrypt.hashSync(password, 13),
         });
 
-        let token = jwt.sign({ id: User1.id }, process.env.JWT_SECRET, { expiresIn: 60 * 60 * 24 });
+        let token = jwt.sign({ id: User.id }, process.env.JWT_SECRET, { expiresIn: 60 * 60 * 24 });
 
         res.status(201).json({
             message: "User successfully registered",
-            user: User1,
+            user: User,
             sessionToken: token
         });
     } catch (err) {
