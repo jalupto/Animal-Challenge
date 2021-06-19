@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-let validateSession = require("../middleware/validate-session");
+const validateSession = require("../middleware/validate-session");
 const { Animal } = require("../models");
 
 /*
@@ -11,18 +11,23 @@ const { Animal } = require("../models");
 
 router.post("/create", validateSession, async(req, res) => {
     const { name, legNumber, predator } = req.body.animal;
-    const { id } = req.user;
     const animalEntry = {
         name,
         legNumber,
         predator,
-        userId: id
-    }
+        userId: req.user.id
+    };
     try {
         const newAnimal = await Animal.create(animalEntry);
-        res.status(200).json(newAnimal)
+        res.status(200).json({
+            message: 'A new animal is born!',
+            newAnimal
+        });
     } catch (err) {
-        res.status(500).json({ error: err });
+        res.status(500).json({
+            message: 'Animal did not survive incubation',
+            error: err
+        });
     }
 });
 
@@ -89,32 +94,6 @@ router.get('/:name', async(req, res) => {
 
 /*
 ============================================
-    Delete animal
-============================================
-*/
-
-router.delete('/delete/:name', validateSession, async(req, res) => {
-    const animalToDelete = req.params.name;
-    try {
-        const query = {
-            where: {
-                name: animalToDelete
-            }
-        };
-
-        await Animal.destroy(query);
-        res.status(200).json({
-            message: `The ${animalToDelete} is now extinct.`
-        });
-    } catch (error) {
-        res.status(500).json({
-            message: `Somehow this animal survived extinction: ${error}`
-        });
-    }
-});
-
-/*
-============================================
     Update animal
 ============================================
 */
@@ -124,15 +103,16 @@ router.put('/update/:id', validateSession, async(req, res) => {
 
     const query = {
         where: {
-            id: req.params.id
+            id: req.params.id,
+            userId: req.user.id
         }
-    }
+    };
 
     const updatedAnimal = {
         name: name,
         legNumber: legNumber,
         predator: predator
-    }
+    };
 
     try {
         const update = await Animal.update(updatedAnimal, query);
@@ -144,6 +124,47 @@ router.put('/update/:id', validateSession, async(req, res) => {
         res.status(500).json({
             message: 'Something went wrong!',
             error: err
+        });
+    }
+});
+
+/*
+============================================
+    Delete animal
+============================================
+*/
+
+router.delete('/delete/:name', validateSession, async(req, res) => {
+    const animalToDelete = req.params.name;
+    try {
+
+        let animal = await Animal.findOne({
+            where: {
+                name: animalToDelete,
+                userId: req.user.id
+            }
+        });
+
+        if (animal) {
+            const query = {
+                where: {
+                    id: animal.id,
+                    userId: req.user.id
+                }
+            };
+
+            await Animal.destroy(query);
+            res.status(200).json({
+                message: `The ${animalToDelete} is now extinct.`
+            });
+        } else {
+            res.status(200).json({
+                message: 'Animal not found'
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: `Somehow this animal survived extinction: ${error}`
         });
     }
 });

@@ -12,11 +12,11 @@ app.use(express.json());
 
 app.use("/user", controllers.usercontroller);
 
-app.use(require('./middleware/validate-session'));
+// app.use(require('./middleware/validate-session'));
 app.use("/animal", controllers.animalcontroller);
 
 db.authenticate()
-    .then(() => db.sync())
+    .then(() => db.sync()) // {force: true} in sync to reset database with updated model properties
     .then(() => {
         app.listen(3000, () =>
             console.log(`[Server]: App is listening on Port ${3000}`)

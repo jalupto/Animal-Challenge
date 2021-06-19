@@ -3,7 +3,7 @@ const { User } = require('../models');
 
 const validateSession = async(req, res, next) => {
     if (req.method == "OPTIONS") {
-        next();
+        next(); //simply move on
     } else if (
         req.headers.authorization &&
         req.headers.authorization.includes("Bearer")
@@ -23,7 +23,7 @@ const validateSession = async(req, res, next) => {
             let foundUser = await User.findOne({ where: { id: payload.id } });
 
             if (foundUser) {
-                req.user = foundUser;
+                req.user = foundUser; //assigning request object new value with user info
                 next();
             } else {
                 res.status(400).send({ message: "Not Authorized" });

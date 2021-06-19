@@ -15,8 +15,8 @@ const Animal = db.define('animal', {
         allowNull: false
     },
     userId: {
-        type: DataTypes.INTEGER
-            // allowNull: false
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
 });
 
